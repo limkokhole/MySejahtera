@@ -49,7 +49,7 @@ def call_api(lat, lng, s):
     post_d = '[{"lat":' + str(lat) + ',"lng":' + str(lng) + ',"classification":"LOW_RISK_NS"}]'
     #print('post_d' + repr(post_d))
     while 1:
-        try: # Normally is fast enough, so use 2 seconds timeout
+        try: # Normally is fast enough, so use 0.1 seconds timeout
             r = s.post(search_url, data=post_d, timeout=(0.1, 0.1))
             #print(dir(r))
             if r.status_code == 404:
@@ -73,9 +73,9 @@ def call_api(lat, lng, s):
                 break
         except (IndexError, simplejson.errors.JSONDecodeError):
             print(r.text)
-            print('API error. Retry after 1 second. Or double check your post data.')
+            print('API error. Retry after 0.1 second. Or double check your post data.')
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
-            print('Network error. Retry after 1 second.')
+            print('Network error. Retry after 0.1 second.')
         time.sleep(0.1)
     return expect_case
 

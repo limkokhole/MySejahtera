@@ -125,14 +125,17 @@ def towards_quadrant(lng_case, lat_case, lat, lng, s, unit, count, until_case, m
     print('\n' + head + '[Quadrant] ' + major_txt + ' [ ' + str(count) + ' ] towards quadrant by ' + str(unit * 1000) + ' Meter')
 
     if (major and (count > 63)) or (not major and (count > 33)): #3(0.1, 0.01, 0.001) major + offset = 63 and 3 minor + offset = 33
-        print(head + '[Quadrant] ' + major_txt + ' Possibly >1 cases around the area and not possible locate accurately. Abort.')
+        print(head + '[Quadrant] ' + major_txt + ' Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
         sys.exit(1)
     prev_lat = lat
     prev_lng = lng
     lat, lng = get_1km_lat_long(lat, lng, lng_case, unit) # unit 0.001 means 1 Meter
     lat, lng = get_1km_lat_long(lat, lng, lat_case, unit)
     case = call_api(lat, lng, s)
-    if case == until_case:
+    if case > 1: # "Must"(not optional) check in every step to avoid chance of outer 1 causes forward a bit. And it also help to stop early without solely rely on final distance.
+        print(head + '[Quadrant] ' + major_txt + ' Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
+        sys.exit(1)
+    elif case == until_case:
 
         #should't reverse both until_case and direction here since it use prev estimated lat/long
 
@@ -175,7 +178,7 @@ def towards_half(lng_case, lat_case, lat, lng, s, unit, orientation, count, unti
     print('\n' + head + '[Half] ' + major_txt + ' [ ' + str(count) + ' ] towards ' + orientation + ' by ' + str(unit * 1000) + ' Meter')
 
     if (major and (count > 63)) or (not major and (count > 33)): #3(0.1, 0.01, 0.001) major + offset = 63 and 3 minor + offset = 33
-        print(head + '[Half] Possibly >1 cases around the area and not possible locate accurately. Abort.')
+        print(head + '[Half] ' + major_txt + ' Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
         sys.exit(1)
     prev_lat = lat
     prev_lng = lng
@@ -184,7 +187,10 @@ def towards_half(lng_case, lat_case, lat, lng, s, unit, orientation, count, unti
     else:
         lat, lng = get_1km_lat_long(lat, lng, lng_case, unit)
     case = call_api(lat, lng, s)
-    if case == until_case:
+    if case > 1: # "Must"(not optional) check in every step to avoid chance of outer 1 causes forward a bit. And it also help to stop early without solely rely on final distance.
+        print(head + '[Half] ' + major_txt + ' Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
+        sys.exit(1)
+    elif case == until_case:
 
         #should't reveser both until_case and direction here since it use prev estimated lat/long
 
@@ -416,6 +422,10 @@ if __name__ == "__main__":
     if len(remaining) >= 2:
         lat = float(remaining[0].rstrip(','))
         lng = float(remaining[1])
+    elif ( len(remaining) == 1 ) and (',' in remaining[0]):
+        arg_split = remaining[0].split(',')
+        lat = float(arg_split[0])
+        lng = float(arg_split[1])
 
     s = get_session()
 
@@ -437,7 +447,7 @@ if __name__ == "__main__":
                     main(lat, lng, s, west_case, east_case, north_case, south_case) # 0.1 means 100 Meters
                     break
             else:
-                print('\nOnly if 1 case in current lat/long possible to locate. Abort.') # unless all cases in single point
+                print('\nOnly if 1 case in current lat/long able to locate by this program. Abort.') # Not impossible(imagine it walk enitre Malaysia map), if it walk to form a big square map to collect all neighbour hotspots(no need entire Malaysia), or calc the circle radian accurately, with more API calls, which is complicated.
                 if not args.check_case_only:
                     break
 

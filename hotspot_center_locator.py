@@ -12,8 +12,6 @@ import geopy.distance
 
 import webbrowser
 
-check_input_only = False
-
 direction_dict = {'west': 270, 'east': 90, 'north': 0, 'south': 180}
 
 UA = 'Mozilla/5.0 (Linux; U; Android 2.2.1; en-us; Nexus One Build/FRG83) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'
@@ -27,7 +25,6 @@ fake_bAth = base64.b64encode( (fake_deviceId + ':' + fake_authToken).encode() ).
 
 # You don't encode space with %20 which causes HTTP 500 err
 BASIC_AUTH = 'Basic ' + fake_bAth
-#print('basic auth is: ' + BASIC_AUTH)
 
 
 def get_session():
@@ -51,7 +48,6 @@ def call_api(lat, lng, s):
     while 1:
         try: # Normally is fast enough, so use 0.1 seconds timeout
             r = s.post(search_url, data=post_d, timeout=(0.1, 0.1))
-            #print(dir(r))
             if r.status_code == 404:
                 print(r.text)
                 print('404 not found error. Abort.')
@@ -134,7 +130,7 @@ def towardsQuadrant(lng_case, lat_case, lat, lng, s, unit, count, until_case, ma
     case = call_api(lat, lng, s)
     if case == until_case:
 
-        #should't reveser both until_case and direction here since it use prev estimated lat/long
+        #should't reverse both until_case and direction here since it use prev estimated lat/long
 
         print('\n ############# [Q] Moved by ' + str(unit) + ' Completed #############')
         print(head + '[Quadrant] ' + major_txt + ' current lat/long at ' + str(prev_lat) + ', ' + str(prev_lng))
@@ -332,6 +328,7 @@ def main(lat, lng, s, west_case, east_case, north_case, south_case):
         print('[M 3] Hotspot center is weird but should nearby with input lat/long which located at ' + str(lat) + ', ' + str(lng))
 
     elif total_cases == 1:
+
         print_side_banner(True)
         if west_case == 1:
             minor_lat, minor_lng = towardsHalf('east', None, lat, lng, s, unit, 'horizontal', count, 0, False, False, 1) # minor side
@@ -409,7 +406,7 @@ if __name__ == "__main__":
     #parser.add_argument('latlong', nargs='?', help='<Latitude>, <Longitude>')
     args, remaining  = parser.parse_known_args()
     # For `python3 hotspot_center_finder.py lat, lnt`, which ',' copy from google map place indicator menu item
-    # I know why use "lng" instead of "long" bcoz long can be type keyword
+    # I know why use "lng" instead of "long" bcoz `long` can be data type keyword
     if len(remaining) >= 2:
         lat = float(remaining[0].rstrip(','))
         lng = float(remaining[1])

@@ -306,7 +306,7 @@ def calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, 
         # https://stackoverflow.com/a/25993441/1074998
         google_map_link = 'http://www.google.com/maps/place/' + center_lat_str + ',' + center_lng_str
         print('Google map link: ' + google_map_link)
-        hotspot_circle_link = 'https://www.nanchatte.com/map/circleService-e.html?lat=' + center_lat_str + '&lng=' + center_lng_str + '&z=15&m=lat:' + center_lng_str + ',lng:' + center_lng_str + '&m=lat:' + center_lat_str + ',lng:' + center_lng_str + '&m=lat:' + str(input_lat) + ',lng:' + str(input_lng) + '&c=lat:' + center_lat_str + ',lng:' + center_lng_str + ',r:1000'
+        hotspot_circle_link = 'https://www.nanchatte.com/map/circleService-e.html?lat=' + center_lat_str + '&lng=' + center_lng_str + '&z=15&m=lat:' + center_lat_str + ',lng:' + center_lng_str + '&m=lat:' + center_lat_str + ',lng:' + center_lng_str + '&m=lat:' + str(input_lat) + ',lng:' + str(input_lng) + '&c=lat:' + center_lat_str + ',lng:' + center_lng_str + ',r:1000'
         print('Hotspot circle link: ' + hotspot_circle_link)
         # https://stackoverflow.com/a/832338/1074998
         webbrowser.open(google_map_link)

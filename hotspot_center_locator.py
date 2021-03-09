@@ -97,7 +97,7 @@ def get_1km_lat_long(lat, lng, move_direction, km):
     return p.latitude, p.longitude
 
 
-def towardsQuadrant(lng_case, lat_case, lat, lng, s, unit, count, until_case, major, perpendicular, nth_side):
+def towards_quadrant(lng_case, lat_case, lat, lng, s, unit, count, until_case, major, perpendicular, nth_side):
     if perpendicular:
         head = ' [Real] [' + str(nth_side) + '/4] '
     else:
@@ -110,13 +110,17 @@ def towardsQuadrant(lng_case, lat_case, lat, lng, s, unit, count, until_case, ma
 
     arrow = ''
     if lng_case == 'east':
+        vertical_prefix = '\t\t'
+    else: # == 'west'
+        vertical_prefix = ''
+    if lat_case == 'north': # this should put on top, for towards_half no nid
+        arrow+='\n' + vertical_prefix + '▲\n' + vertical_prefix + '▲\n' + vertical_prefix + '▲\n' + vertical_prefix + '|\n'
+    if lng_case == 'east':
         arrow+='\n ----- ► ► ► ► ►\n'
     if lng_case == 'west':
         arrow+='\n◄ ◄ ◄ ◄ ◄ -----\n'
-    if lat_case == 'north':
-        arrow+='\n\t\t▲\n\t\t▲\n\t\t▲\n\t\t|\n'
     if lat_case == 'south':
-        arrow+='\n\t\t|\n\t\t▼\n\t\t▼\n\t\t▼\n'
+        arrow+='\n' + vertical_prefix + '|\n' + vertical_prefix + '▼\n' + vertical_prefix + '▼\n' + vertical_prefix + '▼\n'
     print(arrow)
     print('\n' + head + '[Quadrant] ' + major_txt + ' [ ' + str(count) + ' ] towards quadrant by ' + str(unit * 1000) + ' Meter')
 
@@ -132,22 +136,22 @@ def towardsQuadrant(lng_case, lat_case, lat, lng, s, unit, count, until_case, ma
 
         #should't reverse both until_case and direction here since it use prev estimated lat/long
 
-        print('\n ############# [Q] Moved by ' + str(unit) + ' Completed #############')
+        print('\n ############# [Quadrant] Moved by ' + str(unit) + ' Completed #############')
         print(head + '[Quadrant] ' + major_txt + ' current lat/long at ' + str(prev_lat) + ', ' + str(prev_lng))
         if unit == 0.1:
             print(head + '[Quadrant] ' + major_txt + ' Recude to 10 Meters step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
-            return towardsQuadrant(lng_case, lat_case, prev_lat, prev_lng, s, 0.01, count+1, until_case, major, perpendicular, nth_side)
+            return towards_quadrant(lng_case, lat_case, prev_lat, prev_lng, s, 0.01, count+1, until_case, major, perpendicular, nth_side)
         elif unit == 0.01:
             print(head + '[Quadrant] ' + major_txt + ' Recude to 1 Meter step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
-            return towardsQuadrant(lng_case, lat_case, prev_lat, prev_lng, s, 0.001, count+1, until_case, major, perpendicular, nth_side)
+            return towards_quadrant(lng_case, lat_case, prev_lat, prev_lng, s, 0.001, count+1, until_case, major, perpendicular, nth_side)
         else:
             print(head + '[Quadrant] ' + ('Major' if major else 'Minor side') + ' located at ' + str(prev_lat) + ', ' + str(prev_lng))
             return prev_lat, prev_lng
     else:
-        return towardsQuadrant(lng_case, lat_case, lat, lng, s, unit, count+1, until_case, major, perpendicular, nth_side)
+        return towards_quadrant(lng_case, lat_case, lat, lng, s, unit, count+1, until_case, major, perpendicular, nth_side)
 
 
-def towardsHalf(lng_case, lat_case, lat, lng, s, unit, orientation, count, until_case, major, perpendicular, nth_side):
+def towards_half(lng_case, lat_case, lat, lng, s, unit, orientation, count, until_case, major, perpendicular, nth_side):
     if perpendicular:
         head = ' [Real] [' + str(nth_side) + '/4] '
     else:
@@ -184,19 +188,19 @@ def towardsHalf(lng_case, lat_case, lat, lng, s, unit, orientation, count, until
 
         #should't reveser both until_case and direction here since it use prev estimated lat/long
 
-        print('\n ############# [H] Moved by ' + str(unit) + ' Completed #############')
+        print('\n ############# [Half] Moved by ' + str(unit) + ' Completed #############')
         print(head + '[Half] ' + major_txt + ' current lat/long at ' + str(prev_lat) + ', ' + str(prev_lng))
         if unit == 0.1:
             print(head + '[Half] ' + major_txt + ' Reduce to 10 Meters step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
-            return towardsHalf(lng_case, lat_case, prev_lat, prev_lng, s, 0.01, orientation, count+1, until_case, major, perpendicular, nth_side)
+            return towards_half(lng_case, lat_case, prev_lat, prev_lng, s, 0.01, orientation, count+1, until_case, major, perpendicular, nth_side)
         elif unit == 0.01:
             print(head + '[Half] ' + major_txt + ' Recude to 1 Meter step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
-            return towardsHalf(lng_case, lat_case, prev_lat, prev_lng, s, 0.001, orientation, count+1, until_case, major, perpendicular, nth_side)
+            return towards_half(lng_case, lat_case, prev_lat, prev_lng, s, 0.001, orientation, count+1, until_case, major, perpendicular, nth_side)
         else:
             print(head + '[Half] ' + ('Major' if major else 'Minor side') + ' located at ' + str(prev_lat) + ', ' + str(prev_lng))
             return prev_lat, prev_lng
     else:
-        return towardsHalf(lng_case, lat_case, lat, lng, s, unit, orientation, count+1, until_case, major, perpendicular, nth_side)
+        return towards_half(lng_case, lat_case, lat, lng, s, unit, orientation, count+1, until_case, major, perpendicular, nth_side)
 
 
 def check_outer_km(lat, lng, s, unit, check_case_only):
@@ -255,26 +259,26 @@ def calc_chord_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, maj
     if perpendicular_orientation in ('horizontal', 'vertical'):
         print_side_banner(True)
         if (perpendicular_orientation == 'horizontal'):
-            minor_lat, minor_lng = towardsHalf('east', None, lat, lng, s, unit, 'horizontal', count, 0, True, True, 3) # major side
-            major_lat, major_lng = towardsHalf('west', None, lat, lng, s, unit, 'horizontal', count, 0, True, True, 4) # major side
+            minor_lat, minor_lng = towards_half('east', None, lat, lng, s, unit, 'horizontal', count, 0, True, True, 3) # major side
+            major_lat, major_lng = towards_half('west', None, lat, lng, s, unit, 'horizontal', count, 0, True, True, 4) # major side
         elif (perpendicular_orientation == 'vertical'):
-            minor_lat, minor_lng = towardsHalf(None, 'south', lat, lng, s, unit, 'vertical', count, 0, True, True, 3) # major side
-            major_lat, major_lng = towardsHalf(None, 'north', lat, lng, s, unit, 'vertical', count, 0, True, True, 4) # major side
+            minor_lat, minor_lng = towards_half(None, 'south', lat, lng, s, unit, 'vertical', count, 0, True, True, 3) # major side
+            major_lat, major_lng = towards_half(None, 'north', lat, lng, s, unit, 'vertical', count, 0, True, True, 4) # major side
         calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, major_lng)
  
     elif (perpendicular_orientation == 'east_south'):
 
         print_side_banner(True)
-        minor_lat, minor_lng = towardsQuadrant('west', 'north', lat, lng, s, unit, count, 0, True, True, 3) # major side
-        major_lat, major_lng = towardsQuadrant('east', 'south', lat, lng, s, unit, count, 0, True, True, 4) # major side
+        minor_lat, minor_lng = towards_quadrant('west', 'north', lat, lng, s, unit, count, 0, True, True, 3) # major side
+        major_lat, major_lng = towards_quadrant('east', 'south', lat, lng, s, unit, count, 0, True, True, 4) # major side
 
         calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, major_lng)
 
     elif (perpendicular_orientation == 'east_north'):
 
         print_side_banner(True)
-        minor_lat, minor_lng = towardsQuadrant('west', 'south', lat, lng, s, unit, count, 0, True, True, 3) # major side
-        major_lat, major_lng = towardsQuadrant('east', 'north', lat, lng, s, unit, count, 0, True, True, 4) # major side
+        minor_lat, minor_lng = towards_quadrant('west', 'south', lat, lng, s, unit, count, 0, True, True, 3) # major side
+        major_lat, major_lng = towards_quadrant('east', 'north', lat, lng, s, unit, count, 0, True, True, 4) # major side
 
         calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, major_lng)
 
@@ -333,23 +337,23 @@ def main(lat, lng, s, west_case, east_case, north_case, south_case):
 
         print_side_banner(True)
         if west_case == 1:
-            minor_lat, minor_lng = towardsHalf('east', None, lat, lng, s, unit, 'horizontal', count, 0, False, False, 1) # minor side
-            major_lat, major_lng = towardsHalf('west', None, lat, lng, s, unit, 'horizontal', count, 0, True, False, 2) # major side
+            minor_lat, minor_lng = towards_half('east', None, lat, lng, s, unit, 'horizontal', count, 0, False, False, 1) # minor side
+            major_lat, major_lng = towards_half('west', None, lat, lng, s, unit, 'horizontal', count, 0, True, False, 2) # major side
             perpendicular_orientation = 'vertical'
 
         elif east_case == 1:
-            minor_lat, minor_lng = towardsHalf('west', None, lat, lng, s, unit, 'horizontal', count, 0, False, False, 1) # minor side
-            major_lat, major_lng = towardsHalf('east', None, lat, lng, s, unit, 'horizontal', count, 0, True, False, 2) # major side
+            minor_lat, minor_lng = towards_half('west', None, lat, lng, s, unit, 'horizontal', count, 0, False, False, 1) # minor side
+            major_lat, major_lng = towards_half('east', None, lat, lng, s, unit, 'horizontal', count, 0, True, False, 2) # major side
             perpendicular_orientation = 'vertical'
 
         elif north_case == 1:
-            minor_lat, minor_lng = towardsHalf(None, 'south', lat, lng, s, unit, 'vertical', count, 0, False, False, 1) # minor side
-            major_lat, major_lng = towardsHalf(None, 'north', lat, lng, s, unit, 'vertical', count, 0, True, False, 2) # major side
+            minor_lat, minor_lng = towards_half(None, 'south', lat, lng, s, unit, 'vertical', count, 0, False, False, 1) # minor side
+            major_lat, major_lng = towards_half(None, 'north', lat, lng, s, unit, 'vertical', count, 0, True, False, 2) # major side
             perpendicular_orientation = 'horizontal'
 
         elif south_case == 1:
-            minor_lat, minor_lng = towardsHalf(None, 'north', lat, lng, s, unit, 'vertical', count, 0, False, False, 1) # minor side
-            major_lat, major_lng = towardsHalf(None, 'south', lat, lng, s, unit, 'vertical', count, 0, True, False, 2) # major side
+            minor_lat, minor_lng = towards_half(None, 'north', lat, lng, s, unit, 'vertical', count, 0, False, False, 1) # minor side
+            major_lat, major_lng = towards_half(None, 'south', lat, lng, s, unit, 'vertical', count, 0, True, False, 2) # major side
             perpendicular_orientation = 'horizontal'
 
         calc_chord_center(lat, lng, minor_lat, minor_lng, major_lat, major_lng, s, perpendicular_orientation)
@@ -357,40 +361,40 @@ def main(lat, lng, s, west_case, east_case, north_case, south_case):
     elif (east_case == 1) and (south_case == 1):
 
         print_side_banner(False)
-        minor_lat, minor_lng = towardsQuadrant('west', 'north', lat, lng, s, unit, count, 0, False, False, 1) # minor side
+        minor_lat, minor_lng = towards_quadrant('west', 'north', lat, lng, s, unit, count, 0, False, False, 1) # minor side
 
         print_side_banner(True)
-        major_lat, major_lng = towardsQuadrant('east', 'south', lat, lng, s, unit, count, 0, True, False, 2) # major side
+        major_lat, major_lng = towards_quadrant('east', 'south', lat, lng, s, unit, count, 0, True, False, 2) # major side
 
         calc_chord_center(lat, lng, minor_lat, minor_lng, major_lat, major_lng, s, 'east_north')
 
     elif (east_case == 1) and (north_case == 1):
 
         print_side_banner(False)
-        minor_lat, minor_lng = towardsQuadrant('west', 'south', lat, lng, s, unit, count, 0, False, False, 1) # minor side
+        minor_lat, minor_lng = towards_quadrant('west', 'south', lat, lng, s, unit, count, 0, False, False, 1) # minor side
 
         print_side_banner(True)
-        major_lat, major_lng = towardsQuadrant('east', 'north', lat, lng, s, unit, count, 0, True, False, 2) # major side
+        major_lat, major_lng = towards_quadrant('east', 'north', lat, lng, s, unit, count, 0, True, False, 2) # major side
 
         calc_chord_center(lat, lng, minor_lat, minor_lng, major_lat, major_lng, s, 'east_south')
 
     elif (west_case == 1) and (south_case == 1):
 
         print_side_banner(False)
-        minor_lat, minor_lng = towardsQuadrant('east', 'north', lat, lng, s, unit, count+1, 0, False, False, 1) # minor side
+        minor_lat, minor_lng = towards_quadrant('east', 'north', lat, lng, s, unit, count+1, 0, False, False, 1) # minor side
 
         print_side_banner(True)
-        major_lat, major_lng = towardsQuadrant('west', 'south', lat, lng, s, unit, count+1, 0, True, False, 2) # major side
+        major_lat, major_lng = towards_quadrant('west', 'south', lat, lng, s, unit, count+1, 0, True, False, 2) # major side
 
         calc_chord_center(lat, lng, minor_lat, minor_lng, major_lat, major_lng, s, 'east_south')
 
     elif (west_case == 1) and (north_case == 1):
 
         print_side_banner(False)
-        minor_lat, minor_lng = towardsQuadrant('east', 'south', lat, lng, s, unit, count+1, 0, False, False, 1) # minor side
+        minor_lat, minor_lng = towards_quadrant('east', 'south', lat, lng, s, unit, count+1, 0, False, False, 1) # minor side
 
         print_side_banner(True)
-        major_lat, major_lng = towardsQuadrant('west', 'north', lat, lng, s, unit, count+1, 0, True, False, 2) # major side
+        major_lat, major_lng = towards_quadrant('west', 'north', lat, lng, s, unit, count+1, 0, True, False, 2) # major side
 
         calc_chord_center(lat, lng, minor_lat, minor_lng, major_lat, major_lng, s, 'east_north')
 

@@ -235,10 +235,10 @@ def calc_chord_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, maj
     # To ensure only 1 case round this area, double the km from 1km to 2km from center point.
     print('\n\n ############# Verify false positive ############# ')
     print('Chord center lat: ' + str(center_lat) + ' Long: ' + str(center_lng))
-    # Should use geodesic instead of great_circle, since calc distance that time is geodesic, or else the comparison inconsistent, https://stackoverflow.com/questions/19412462 , https://geopy.readthedocs.io/en/stable/#module-geopy.distance
+    # Should use geodesic instead of great_circle, since calc lat/long that time is .distance which used geodesic, or else the comparison inconsistent, https://stackoverflow.com/questions/19412462 , https://geopy.readthedocs.io/en/stable/#module-geopy.distance
     distance = geopy.distance.geodesic( (minor_lat, minor_lng), (major_lat, major_lng) ).km
     print('Diameter of hotspot chord circle in km: ' + str(distance))
-    if distance > 2: # 1 km radius * 2 , no nid care for offset 
+    if distance > 2: # 1 km radius * 2 , no nid care for offset, and failed better than inaccurate.
         print('Distance is too long which possible caused by >1 cases round the area. Abort.')
         sys.exit(1)
     else:
@@ -291,10 +291,10 @@ def calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, 
 
     # To ensure only 1 case round this area, double the km from 1km to 2km from center point.
     print('\n\n ############# Verify false positive ############# ')
-    # Should use geodesic instead of great_circle, since calc distance that time is geodesic, or else the comparison inconsistent, https://stackoverflow.com/questions/19412462 , https://geopy.readthedocs.io/en/stable/#module-geopy.distance
+    # Should use geodesic instead of great_circle, since calc lat/long that time is .distance which used geodesic, or else the comparison inconsistent, https://stackoverflow.com/questions/19412462 , https://geopy.readthedocs.io/en/stable/#module-geopy.distance
     distance = geopy.distance.geodesic( (minor_lat, minor_lng), (major_lat, major_lng) ).km
     print('Diameter of hotspot circle in km: ' + str(distance))
-    if distance > 2: # 1 km radius * 2 , no nid care for offset 
+    if distance > 2: # 1 km radius * 2 , no nid care for offset, and failed better than inaccurate. 
         print('Distance is too long which possible caused by >1 cases round the area. Abort.')
     else:
         print('Distance is valid.')

@@ -407,7 +407,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--check-case', dest='check_case_only', action='store_true', help='Check cases of provided lat/long without continue to find hotspot.')
     #parser.add_argument('latlong', nargs='?', help='<Latitude>, <Longitude>')
     args, remaining  = parser.parse_known_args()
-    # For `python3 hotspot_center_finder.py lat, lnt`, which ',' copy from google map place indicator menu item
+    # For `python3 hotspot_center_locator.py lat, lnt`, which ',' copy from google map place indicator menu item
     # I know why use "lng" instead of "long" bcoz `long` can be data type keyword
     if len(remaining) >= 2:
         lat = float(remaining[0].rstrip(','))

@@ -16,8 +16,11 @@ direction_dict = {'west': 270, 'east': 90, 'north': 0, 'south': 180}
 
 UA = 'Mozilla/5.0 (Linux; U; Android 2.2.1; en-us; Nexus One Build/FRG83) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'
 search_url = 'https://mysejahtera.malaysia.gov.my/register/api/nearby/hotspots?type=search'
+# Normally is fast enough, so use 0.1 seconds timeout. Change this if keep timeout error.
+n_timeout = 0.1
 
-max_radius_km = 1.00
+# Allow offset to avoid able re-run twice baru can get un-re-run-able center.
+max_radius_km = 1.001
 
 fake_deviceId = str(uuid.uuid1())
 fake_authToken = fake_deviceId
@@ -46,8 +49,8 @@ def call_api(lat, lng, s):
     post_d = '[{"lat":' + str(lat) + ',"lng":' + str(lng) + ',"classification":"LOW_RISK_NS"}]'
     #print('post_d' + repr(post_d))
     while 1:
-        try: # Normally is fast enough, so use 0.1 seconds timeout
-            r = s.post(search_url, data=post_d, timeout=(0.1, 0.1))
+        try:
+            r = s.post(search_url, data=post_d, timeout=(n_timeout, n_timeout))
             if r.status_code == 404:
                 print(r.text)
                 print('404 not found error. Abort.')
@@ -122,33 +125,42 @@ def towards_quadrant(lng_case, lat_case, lat, lng, s, unit, count, until_case, m
     if lat_case == 'south':
         arrow+='\n' + vertical_prefix + '|\n' + vertical_prefix + '▼\n' + vertical_prefix + '▼\n' + vertical_prefix + '▼\n'
     print(arrow)
-    print('\n' + head + '[Quadrant] ' + major_txt + ' [ ' + str(count) + ' ] towards quadrant by ' + str(unit * 1000) + ' Meter')
 
-    if (major and (count > 63)) or (not major and (count > 33)): #3(0.1, 0.01, 0.001) major + offset = 63 and 3 minor + offset = 33
-        print(head + '[Quadrant] ' + major_txt + ' Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
-        sys.exit(1)
+    if unit <= 0.0001:
+        print_unit = str(unit * 100000) + ' CM'
+    else:
+        print_unit = str(unit * 1000) + ' Meters'
+    print('\n' + head + '[Quadrant] ' + major_txt + ' [ ' + str(count) + ' ] towards quadrant by ' + print_unit)
+
     prev_lat = lat
     prev_lng = lng
     lat, lng = get_1km_lat_long(lat, lng, lng_case, unit) # unit 0.001 means 1 Meter
     lat, lng = get_1km_lat_long(lat, lng, lat_case, unit)
+
     case = call_api(lat, lng, s)
-    if case > 1: # "Must"(not optional) check in every step to avoid chance of outer 1 causes forward a bit. And it also help to stop early without solely rely on final distance.
-        print(head + '[Quadrant] ' + major_txt + ' Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
+
+    if case > 1: # "Must"(not optional) check in every step to avoid chance of outer 1 causes forward a bit. And it also help to stop early without solely rely on final distance. And it also make `if count > max_count; then stop` unnecessary.
+        print(head + '[Quadrant] ' + major_txt + ' [e1] Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
         sys.exit(1)
-    elif case == until_case:
+
+    if case == until_case:
 
         #should't reverse both until_case and direction here since it use prev estimated lat/long
 
         print('\n ############# [Quadrant] Moved by ' + str(unit) + ' Completed #############')
         print(head + '[Quadrant] ' + major_txt + ' current lat/long at ' + str(prev_lat) + ', ' + str(prev_lng))
-        if unit == 0.1:
-            print(head + '[Quadrant] ' + major_txt + ' Recude to 10 Meters step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
-            return towards_quadrant(lng_case, lat_case, prev_lat, prev_lng, s, 0.01, count+1, until_case, major, perpendicular, nth_side)
-        elif unit == 0.01:
-            print(head + '[Quadrant] ' + major_txt + ' Recude to 1 Meter step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
-            return towards_quadrant(lng_case, lat_case, prev_lat, prev_lng, s, 0.001, count+1, until_case, major, perpendicular, nth_side)
+
+        unit/=2.0
+        if unit >= 0.00006:
+            if unit <= 0.0001:
+                print_unit = str(unit * 100000) + ' CM'
+            else:
+                print_unit = str(unit * 1000) + ' Meters'
+
+            print(head + '[Quadrant] ' + major_txt + ' Reduce to ' + print_unit + ' step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
+            return towards_quadrant(lng_case, lat_case, prev_lat, prev_lng, s, unit, count+1, until_case, major, perpendicular, nth_side)
         else:
-            print(head + '[Quadrant] ' + ('Major' if major else 'Minor side') + ' located at ' + str(prev_lat) + ', ' + str(prev_lng))
+            print(head + '[Quadrant] ' + ('Major side' if major else 'Minor side') + ' located at ' + str(prev_lat) + ', ' + str(prev_lng))
             return prev_lat, prev_lng
     else:
         return towards_quadrant(lng_case, lat_case, lat, lng, s, unit, count+1, until_case, major, perpendicular, nth_side)
@@ -175,35 +187,44 @@ def towards_half(lng_case, lat_case, lat, lng, s, unit, orientation, count, unti
     if lat_case == 'south':
         arrow+='\n\t\t|\n\t\t▼\n\t\t▼\n\t\t▼\n'
     print(arrow)
-    print('\n' + head + '[Half] ' + major_txt + ' [ ' + str(count) + ' ] towards ' + orientation + ' by ' + str(unit * 1000) + ' Meter')
 
-    if (major and (count > 63)) or (not major and (count > 33)): #3(0.1, 0.01, 0.001) major + offset = 63 and 3 minor + offset = 33
-        print(head + '[Half] ' + major_txt + ' Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
-        sys.exit(1)
+    if unit <= 0.0001:
+        print_unit = str(unit * 100000) + ' CM'
+    else:
+        print_unit = str(unit * 1000) + ' Meters'
+    print('\n' + head + '[Half] ' + major_txt + ' [ ' + str(count) + ' ] towards ' + orientation + ' by ' + print_unit)
+
     prev_lat = lat
     prev_lng = lng
     if orientation == 'vertical':
         lat, lng = get_1km_lat_long(lat, lng, lat_case, unit) # unit 0.001 means 1 Meter
     else:
         lat, lng = get_1km_lat_long(lat, lng, lng_case, unit)
+
     case = call_api(lat, lng, s)
-    if case > 1: # "Must"(not optional) check in every step to avoid chance of outer 1 causes forward a bit. And it also help to stop early without solely rely on final distance.
-        print(head + '[Half] ' + major_txt + ' Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
+
+    if case > 1: # "Must"(not optional) check in every step to avoid chance of outer 1 causes forward a bit. And it also help to stop early without solely rely on final distance. And it also make `if count > max_count; then stop` unnecessary.
+        print(head + '[Half] ' + major_txt + ' [e2] Possibly >1 hotspots around the area and not possible locate accurately. Abort.')
         sys.exit(1)
-    elif case == until_case:
+     
+    if case == until_case:
 
         #should't reveser both until_case and direction here since it use prev estimated lat/long
 
         print('\n ############# [Half] Moved by ' + str(unit) + ' Completed #############')
         print(head + '[Half] ' + major_txt + ' current lat/long at ' + str(prev_lat) + ', ' + str(prev_lng))
-        if unit == 0.1:
-            print(head + '[Half] ' + major_txt + ' Reduce to 10 Meters step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
-            return towards_half(lng_case, lat_case, prev_lat, prev_lng, s, 0.01, orientation, count+1, until_case, major, perpendicular, nth_side)
-        elif unit == 0.01:
-            print(head + '[Half] ' + major_txt + ' Recude to 1 Meter step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
-            return towards_half(lng_case, lat_case, prev_lat, prev_lng, s, 0.001, orientation, count+1, until_case, major, perpendicular, nth_side)
+
+        unit/=2.0
+        if unit >= 0.00006:
+            if unit <= 0.0001:
+                print_unit = str(unit * 100000) + ' CM'
+            else:
+                print_unit = str(unit * 1000) + ' Meters'
+
+            print(head + '[Half] ' + major_txt + ' Reduce to ' + print_unit + ' step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
+            return towards_half(lng_case, lat_case, prev_lat, prev_lng, s, unit, orientation, count+1, until_case, major, perpendicular, nth_side)
         else:
-            print(head + '[Half] ' + ('Major' if major else 'Minor side') + ' located at ' + str(prev_lat) + ', ' + str(prev_lng))
+            print(head + '[Half] ' + ('Major side' if major else 'Minor side') + ' located at ' + str(prev_lat) + ', ' + str(prev_lng))
             return prev_lat, prev_lng
     else:
         return towards_half(lng_case, lat_case, lat, lng, s, unit, orientation, count+1, until_case, major, perpendicular, nth_side)
@@ -256,7 +277,7 @@ def calc_chord_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, maj
     lat = center_lat
     lng = center_lng
     # init for each major/minor, like main()
-    unit = 0.1
+    unit = 0.5 # Start from 500 Meters step
     count = 1
 
     # Not do test case here and always try 2nd, and all major not big deal since got check max distance at the end
@@ -326,7 +347,7 @@ def calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, 
 def main(lat, lng, s, west_case, east_case, north_case, south_case):
 
     # init for each major/minor
-    unit = 0.1
+    unit = 0.5 # Start from 500 Meters step
     count = 1
 
     total_cases = west_case + east_case + north_case + south_case
@@ -337,7 +358,7 @@ def main(lat, lng, s, west_case, east_case, north_case, south_case):
 
     elif total_cases == 3: # Total 3: 3 sides are 1 but only 1 side is 0 is not make sense.
 
-        print('[M 3] Hotspot center is weird but should nearby with input lat/long which located at ' + str(lat) + ', ' + str(lng))
+        print('[M 3] Hotspot center is weird but should behind with input lat/long which located at ' + str(lat) + ', ' + str(lng))
 
     elif total_cases == 1:
 
@@ -387,25 +408,25 @@ def main(lat, lng, s, west_case, east_case, north_case, south_case):
     elif (west_case == 1) and (south_case == 1):
 
         print_side_banner(False)
-        minor_lat, minor_lng = towards_quadrant('east', 'north', lat, lng, s, unit, count+1, 0, False, False, 1) # minor side
+        minor_lat, minor_lng = towards_quadrant('east', 'north', lat, lng, s, unit, count, 0, False, False, 1) # minor side
 
         print_side_banner(True)
-        major_lat, major_lng = towards_quadrant('west', 'south', lat, lng, s, unit, count+1, 0, True, False, 2) # major side
+        major_lat, major_lng = towards_quadrant('west', 'south', lat, lng, s, unit, count, 0, True, False, 2) # major side
 
         calc_chord_center(lat, lng, minor_lat, minor_lng, major_lat, major_lng, s, 'east_south')
 
     elif (west_case == 1) and (north_case == 1):
 
         print_side_banner(False)
-        minor_lat, minor_lng = towards_quadrant('east', 'south', lat, lng, s, unit, count+1, 0, False, False, 1) # minor side
+        minor_lat, minor_lng = towards_quadrant('east', 'south', lat, lng, s, unit, count, 0, False, False, 1) # minor side
 
         print_side_banner(True)
-        major_lat, major_lng = towards_quadrant('west', 'north', lat, lng, s, unit, count+1, 0, True, False, 2) # major side
+        major_lat, major_lng = towards_quadrant('west', 'north', lat, lng, s, unit, count, 0, True, False, 2) # major side
 
         calc_chord_center(lat, lng, minor_lat, minor_lng, major_lat, major_lng, s, 'east_north')
 
     else: # e.g. west/east both 1 but south/north both 0 come here
-        print('[M 2] Hotspot center is weird but should nearby with input lat/long which located at ' + str(lat) + ', ' + str(lng))
+        print('[M 2] Hotspot center is weird but should behind with input lat/long which located at ' + str(lat) + ', ' + str(lng))
     
 
 if __name__ == "__main__":
@@ -413,10 +434,11 @@ if __name__ == "__main__":
     lat = None
     lng = None
     import argparse
-    parser = argparse.ArgumentParser(description='MySejahtera Hotspot Center Locator')
-    parser.add_argument('-c', '--check-case', dest='check_case_only', action='store_true', help='Check cases of provided lat/long without continue to find hotspot.')
-    #parser.add_argument('latlong', nargs='?', help='<Latitude>, <Longitude>')
-    args, remaining  = parser.parse_known_args()
+    arg_parser = argparse.ArgumentParser(description='MySejahtera Hotspot Center Locator')
+    arg_parser.add_argument('-c', '--check-case', dest='check_case_only', action='store_true', help='Check cases of provided lat/long without continue to find hotspot.')
+    arg_parser.add_argument('-t', '--timeout', dest='n_timeout', type=float, default=n_timeout, help='Specify timeout if network slow.')
+    #arg_parser.add_argument('latlong', nargs='?', help='<Latitude>, <Longitude>')
+    args, remaining  = arg_parser.parse_known_args()
     # For `python3 hotspot_center_locator.py lat, lnt`, which ',' copy from google map place indicator menu item
     # I know why use "lng" instead of "long" bcoz `long` can be data type keyword
     if len(remaining) >= 2:
@@ -427,6 +449,7 @@ if __name__ == "__main__":
         lat = float(arg_split[0])
         lng = float(arg_split[1])
 
+    n_timeout = args.n_timeout 
     s = get_session()
 
     while 1:

@@ -96,7 +96,7 @@ def get_1km_lat_long(lat, lng, move_direction, km):
     direction = direction_dict[move_direction]
     print('\nMove direction: ' + move_direction)
     p = d.destination(point=start, bearing=direction) # ret: point
-    print('Increased to lat, long: ' + str(p.latitude) + ', ' + str(p.longitude))
+    print('Moving to lat, long: ' + str(p.latitude) + ', ' + str(p.longitude))
     return p.latitude, p.longitude
 
 
@@ -157,7 +157,7 @@ def towards_quadrant(lng_case, lat_case, lat, lng, s, unit, count, until_case, m
             else:
                 print_unit = str(unit * 1000) + ' Meters'
 
-            print(head + '[Quadrant] ' + major_txt + ' Reduce to ' + print_unit + ' step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
+            print(head + '[Quadrant] ' + major_txt + ' Reduce to ' + print_unit + ' step, ' + ('Major side' if major else 'Minor side') + ' estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
             return towards_quadrant(lng_case, lat_case, prev_lat, prev_lng, s, unit, count+1, until_case, major, perpendicular, nth_side)
         else:
             print(head + '[Quadrant] ' + ('Major side' if major else 'Minor side') + ' located at ' + str(prev_lat) + ', ' + str(prev_lng))
@@ -221,7 +221,7 @@ def towards_half(lng_case, lat_case, lat, lng, s, unit, orientation, count, unti
             else:
                 print_unit = str(unit * 1000) + ' Meters'
 
-            print(head + '[Half] ' + major_txt + ' Reduce to ' + print_unit + ' step, Hotspot center estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
+            print(head + '[Half] ' + major_txt + ' Reduce to ' + print_unit + ' step, ' + ('Major side' if major else 'Minor side') + ' estimated at ' + str(prev_lat) + ', ' + str(prev_lng) + '\n')
             return towards_half(lng_case, lat_case, prev_lat, prev_lng, s, unit, orientation, count+1, until_case, major, perpendicular, nth_side)
         else:
             print(head + '[Half] ' + ('Major side' if major else 'Minor side') + ' located at ' + str(prev_lat) + ', ' + str(prev_lng))

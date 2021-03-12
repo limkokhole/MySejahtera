@@ -337,7 +337,7 @@ def calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, 
         center_lng_str = str(center_lng) 
         print('\n\n ############# Result ############# ')
         print('\nHotspot center probably located at ' + center_lat_str + ', ' + center_lng_str)
-        print('You can double check (expected results: all 0s) by re-run this script with that lat/long.\n')
+        print('You can double check (expected results: all 0s) by re-run this script with that lat/long. Or re-run again to ensure accuracy if you\'re paranoid what if data updating within this few seconds.\n')
         # https://stackoverflow.com/a/25993441/1074998
         google_map_link = 'http://www.google.com/maps/place/' + center_lat_str + ',' + center_lng_str
         print('Google map link: ' + google_map_link)

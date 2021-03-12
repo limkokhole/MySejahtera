@@ -477,7 +477,7 @@ if __name__ == "__main__":
                     break
 
         try:
-            reply = input('\nPlease paste <lat, long> OR type \'q\' to exit: ').strip()
+            reply = input('\nPlease paste <lat, long> OR type \'q\' to quit: ').strip()
         except EOFError: #when use -1 and < list_of_lines_file, last line will raise EOFError
             break
         if (reply and reply[0].lower() != 'q'):

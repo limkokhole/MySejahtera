@@ -329,7 +329,7 @@ def calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, 
     print('Diameter of hotspot circle in km: ' + str(distance))
     if distance > 2.00012: # (1 km radius * 2 sides)  + (offset ~6 cm (min step) * 2 sides) 
         print('Distance is too long which possible caused by >1 cases around the area. Abort.')
-    elif distance < 1.9:
+    elif distance < 1.9: # This unlikely happen based on current flow(unless expect diameter but it's chord, caused by suddenly API data change), it acts as last resort of safe guard in case any bug too.
         print('Distance is too short which possible caused by >1 cases around the area. Abort.')
     else:
         print('Distance is valid.')

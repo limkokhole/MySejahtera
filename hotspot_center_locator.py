@@ -248,6 +248,8 @@ def check_outer_km(lat, lng, s, unit, check_case_only):
         print('\nThis lat/long can\'t be used since outer 1KM not all 1 or 0 case. Abort.')
         if not check_case_only:
             sys.exit(1)
+        else:
+            return None, None, None, None
     else:
         return west_case, east_case, north_case, south_case
 
@@ -465,7 +467,7 @@ if __name__ == "__main__":
                 print('\n\n ############# Start outer 1km verification ############# ')
                 west_case, east_case, north_case, south_case = check_outer_km(lat, lng, s, 1, args.check_case_only)
                 print('\n\n ############# Done outer 1km verification ############# ')
-                if not args.check_case_only:
+                if (west_case is not None) and not args.check_case_only:
                     print('Start with 100 Meter step')
                     main(lat, lng, s, west_case, east_case, north_case, south_case) # 0.1 means 100 Meters
                     break

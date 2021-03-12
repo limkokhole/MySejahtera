@@ -72,8 +72,8 @@ def call_api(lat, lng, s):
                 break
         except (IndexError, simplejson.errors.JSONDecodeError):
             print(r.text)
-            print('API error. Retry after 0.1 second. Or double check your post data.')
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+            print('API error. Retry after 0.1 second. Or double check your post data and response.')
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, requests.exceptions.ChunkedEncodingError):
             print('Network error. Retry after 0.1 second.')
         time.sleep(0.1)
     return expect_case
@@ -269,7 +269,7 @@ def calc_chord_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, maj
     # Should use geodesic instead of great_circle, since calc lat/long that time is .distance which used geodesic, or else the comparison inconsistent, https://stackoverflow.com/questions/19412462 , https://geopy.readthedocs.io/en/stable/#module-geopy.distance
     distance = geopy.distance.geodesic( (minor_lat, minor_lng), (major_lat, major_lng) ).km
     print('Diameter of hotspot chord circle in km: ' + str(distance))
-    if distance > 2: # 1 km radius * 2 , no nid care for offset, and failed better than inaccurate.
+    if distance > 2.00012: # 1 km radius * 2  + (offset ~6 * 2 cm)
         print('Distance is too long which possible caused by >1 cases round the area. Abort.')
         sys.exit(1)
     else:

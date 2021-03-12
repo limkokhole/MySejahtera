@@ -271,8 +271,8 @@ def calc_chord_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, maj
     # Should use geodesic instead of great_circle, since calc lat/long that time is .distance which used geodesic, or else the comparison inconsistent, https://stackoverflow.com/questions/19412462 , https://geopy.readthedocs.io/en/stable/#module-geopy.distance
     distance = geopy.distance.geodesic( (minor_lat, minor_lng), (major_lat, major_lng) ).km
     print('Diameter of hotspot chord circle in km: ' + str(distance))
-    if distance > 2.00012: # 1 km radius * 2  + (offset ~6 cm (min step) * 2)
-        print('Distance is too long which possible caused by >1 cases round the area. Abort.')
+    if distance > 2.00012: # (1 km radius * 2 sides)  + (offset ~6 cm (min step) * 2 sides)
+        print('Distance is too long which possible caused by >1 cases around the area. Abort.')
         sys.exit(1)
     else:
         print('Distance valid so far.')
@@ -327,8 +327,10 @@ def calc_diameter_center(input_lat, input_lng, minor_lat, minor_lng, major_lat, 
     # Should use geodesic instead of great_circle, since calc lat/long that time is .distance which used geodesic, or else the comparison inconsistent, https://stackoverflow.com/questions/19412462 , https://geopy.readthedocs.io/en/stable/#module-geopy.distance
     distance = geopy.distance.geodesic( (minor_lat, minor_lng), (major_lat, major_lng) ).km
     print('Diameter of hotspot circle in km: ' + str(distance))
-    if distance > 2.00012: # 1 km radius * 2  + (offset ~6 cm (min step) * 2) 
-        print('Distance is too long which possible caused by >1 cases round the area. Abort.')
+    if distance > 2.00012: # (1 km radius * 2 sides)  + (offset ~6 cm (min step) * 2 sides) 
+        print('Distance is too long which possible caused by >1 cases around the area. Abort.')
+    elif distance < 1.9:
+        print('Distance is too short which possible caused by >1 cases around the area. Abort.')
     else:
         print('Distance is valid.')
         center_lat_str = str(center_lat) 

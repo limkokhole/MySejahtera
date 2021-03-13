@@ -482,7 +482,7 @@ if __name__ == "__main__":
             reply = input('\nPlease paste <lat, long> OR type \'q\' to quit: ').strip()
         except EOFError: #when use -1 and < list_of_lines_file, last line will raise EOFError
             break
-        if (reply and reply[0].lower() != 'q'):
+        if reply and (reply[0].lower() != 'q'):
             if ',' in reply:
                 lat = float(reply.split(',')[0].strip())
                 lng = float(reply.split(',')[1].strip())

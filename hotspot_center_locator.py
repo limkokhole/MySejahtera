@@ -480,7 +480,7 @@ if __name__ == "__main__":
 
         try:
             reply = input('\nPlease paste <lat, long> OR type \'q\' to quit: ').strip()
-        except EOFError: #when use -1 and < list_of_lines_file, last line will raise EOFError
+        except EOFError: # When pass args to -c with <list_of_latlong_file, last line will raise EOFError
             break
         if reply and (reply[0].lower() != 'q'):
             if ',' in reply:
